@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vesta — Brand Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --gold:#b8955a;--gold-light:#d4b07a;--gold-dark:#8a6c3e;
+  --dark:#1c1812;--mid:#4a3f2f;--muted:#8a7a62;
+  --border:#e8dcc8;--bg:#faf7f2;--card:#ffffff;
+  --red:#c0392b;--green:#16a34a;--blue:#2563eb;
+  --shadow:0 2px 16px rgba(28,24,18,0.07);
+}
+html,body{min-height:100%;background:var(--bg);font-family:'Jost',sans-serif;color:var(--dark);}
+
+#loginScreen{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(160deg,#1c1812 0%,#2e2416 60%,#1a160f 100%);
+  padding:24px;position:relative;overflow:hidden;
+}
+#loginScreen::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 50%,rgba(184,149,90,0.08) 0%,transparent 60%),
+             radial-gradient(ellipse at 80% 20%,rgba(184,149,90,0.05) 0%,transparent 50%);
+  pointer-events:none;
+}
+.login-brand{text-align:center;margin-bottom:36px;}
+.login-brand h1{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;color:#fff;letter-spacing:0.5px;}
+.login-brand p{font-size:0.68rem;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-top:5px;}
+.login-card{width:100%;max-width:360px;background:rgba(255,255,255,0.04);border:1px solid rgba(184,149,90,0.2);border-radius:22px;padding:32px 28px;backdrop-filter:blur(12px);box-shadow:0 32px 80px rgba(0,0,0,0.5);}
+.login-card h2{font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:#fff;font-weight:500;margin-bottom:5px;}
+.login-card p{font-size:0.72rem;color:rgba(255,255,255,0.35);margin-bottom:26px;}
+.login-field{margin-bottom:16px;}
+.login-field label{display:block;font-size:0.63rem;font-weight:600;letter-spacing:1.3px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:7px;}
+.login-field input{width:100%;padding:12px 16px;border-radius:11px;border:1.5px solid rgba(184,149,90,0.2);background:rgba(255,255,255,0.05);color:#fff;font-family:'Jost',sans-serif;font-size:0.87rem;outline:none;transition:border-color .2s;}
+.login-field input::placeholder{color:rgba(255,255,255,0.18);}
+.login-field input:focus{border-color:var(--gold);}
+.login-btn{width:100%;padding:14px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold-dark));color:#fff;font-family:'Jost',sans-serif;font-size:0.87rem;font-weight:600;letter-spacing:0.5px;cursor:pointer;transition:all .2s;margin-top:8px;box-shadow:0 6px 24px rgba(184,149,90,0.3);}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(184,149,90,0.4);}
+.login-error{background:rgba(192,57,43,0.15);border:1px solid rgba(192,57,43,0.3);color:#ff8a7a;border-radius:9px;padding:10px 14px;font-size:0.73rem;margin-top:12px;display:none;text-align:center;}
+
+#dashboard{display:none;min-height:100vh;background:var(--bg);}
+.header{background:linear-gradient(135deg,#1c1812,#2a1e10);padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(184,149,90,0.2);position:sticky;top:0;z-index:200;}
+.header-logo{width:38px;height:38px;border-radius:10px;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-weight:700;color:#fff;font-size:1.2rem;}
+.header-info{flex:1;}
+.header-info h1{font-family:'Cormorant Garamond',serif;font-size:0.95rem;color:#fff;font-weight:600;}
+.header-info p{font-size:0.55rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);}
+.header-buttons{display:flex;gap:8px;}
+.brand-badge{background:rgba(184,149,90,0.15);border:1px solid rgba(184,149,90,0.3);color:var(--gold);border-radius:20px;padding:5px 12px;font-size:0.67rem;font-weight:600;}
+.logout-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);border-radius:8px;padding:6px 10px;font-size:0.63rem;cursor:pointer;font-family:'Jost',sans-serif;transition:all .2s;}
+.logout-btn:hover{color:#fff;background:rgba(255,255,255,0.1);}
+
+.nav-tabs{display:flex;background:#fff;border-bottom:none;overflow-x:auto;scrollbar-width:none;position:sticky;top:67px;z-index:190;padding:12px 16px;gap:8px;align-items:center;}
+.nav-tabs::-webkit-scrollbar{display:none;}
+.nav-tab{padding:10px 18px;text-align:center;font-size:0.68rem;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted);cursor:pointer;border:none;background:transparent;border-radius:20px;transition:all .3s ease;white-space:nowrap;position:relative;border:1px solid var(--border);}
+.nav-tab:hover{color:var(--dark);border-color:var(--muted);}
+.nav-tab.active{color:#fff;background:var(--gold);border-color:var(--gold);box-shadow:0 2px 8px rgba(184,149,90,0.3);}
+
+.panel{display:none;padding:20px 16px;max-width:640px;margin:0 auto;}
+.panel.active{display:block;}
+
+.kpi-name{font-size:0.6rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+
+.btn-group{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:16px;}
+.btn-group button{padding:10px 6px;border-radius:20px;border:1px solid var(--border);background:#fff;font-family:'Jost',sans-serif;font-size:0.68rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s;}
+.btn-group button:hover{background:var(--gold);color:#fff;border-color:var(--gold);}
+.btn-group button.active{background:var(--gold);color:#fff;border-color:var(--gold);}
+
+.month-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px;}
+.month-btn{padding:12px 8px;border-radius:16px;border:1px solid var(--border);background:#fff;color:var(--muted);font-family:'Jost',sans-serif;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all .2s;}
+.month-btn:hover{border-color:var(--gold);}
+.month-btn.active{border-color:var(--gold);background:var(--gold);color:#fff;}
+.month-btn.active::after{content:'✓';position:absolute;top:2px;right:6px;width:6px;height:6px;background:#fff;border-radius:50%;opacity:0.8;}
+
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.kpi-card{background:var(--card);border:1px solid var(--border);border-top:4px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow);}
+.kpi-card.green{border-top-color:#4ade80;}
+.kpi-card.blue{border-top-color:#60a5fa;}
+.kpi-card.red{border-top-color:#f87171;}
+.kpi-card.yellow{border-top-color:#fbbf24;}
+.kpi-val{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:700;color:var(--dark);line-height:1;margin-bottom:6px;}
+.kpi-sub{font-size:0.63rem;color:var(--muted);}
+
+.drill-header{font-size:0.6rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.drill-details{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+details{border-bottom:1px solid var(--border);}
+summary{padding:14px 16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;list-style:none;font-weight:600;font-size:0.85rem;}
+summary:hover{background:#faf7f2;}
+.drill-content{padding:0 16px 14px;}
+.drill-card{background:#faf7f2;border-radius:10px;padding:10px 12px;margin-top:8px;}
+.drill-card-title{font-weight:600;font-size:0.8rem;margin-bottom:6px;}
+.drill-stats{display:flex;justify-content:space-between;font-size:0.63rem;color:var(--muted);}
+.drill-amount{color:var(--gold);font-weight:600;}
+
+@media (max-width:640px){
+  .kpi-grid{grid-template-columns:1fr;}
+  .btn-group{grid-template-columns:repeat(3,1fr);}
+  .month-grid{grid-template-columns:repeat(3,1fr);}
+}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-brand">
+    <h1>Brand Integer</h1>
+    <p>Brand Portal</p>
+  </div>
+  <div class="login-card">
+    <h2>Welcome Back</h2>
+    <form onsubmit="handleLogin(event)">
+      <div class="login-field">
+        <label>Brand Name</label>
+        <input type="text" id="brandInput" placeholder="Vesta" autocomplete="off">
+      </div>
+      <div class="login-field">
+        <label>Access Code</label>
+        <input type="password" id="codeInput" placeholder="••••••" autocomplete="off">
+      </div>
+      <button type="submit" class="login-btn">Access Portal</button>
+      <div class="login-error" id="loginError">Invalid credentials</div>
+    </form>
+  </div>
+</div>
+
+<div id="dashboard">
+  <div class="header">
+    <div class="header-logo">V</div>
+    <div class="header-info">
+      <h1>Brand Integer</h1>
+      <p>Campaign Portal</p>
+    </div>
+    <div class="header-buttons">
+      <div class="brand-badge">Vesta</div>
+      <button class="logout-btn" onclick="handleLogout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('dashContent')">Dashboard</button>
+    <button class="nav-tab" onclick="switchTab('campContent')">Campaigns</button>
+    <button class="nav-tab" onclick="switchTab('payContent')">Payments</button>
+    <button class="nav-tab" onclick="switchTab('impactContent')">Impact</button>
+    <button class="nav-tab" onclick="switchTab('ratContent')">Ratings</button>
+  </div>
+
+  <div class="panel active" id="dashPanel">
+    <div id="dashContent"></div>
+  </div>
+
+  <div class="panel" id="campPanel">
+    <div id="campContent"></div>
+  </div>
+
+  <div class="panel" id="payPanel">
+    <div id="payContent"></div>
+  </div>
+
+  <div class="panel" id="impactPanel">
+    <div id="impactContent"></div>
+  </div>
+
+  <div class="panel" id="ratPanel">
+    <div id="ratContent"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+<script>
+const SHEET_ID = '1wvFizOzI8kpBZhdbJAPAOsaS9QSJqg02TiGH4PFKicU';
+const VALID_BRAND = 'Vesta';
+const VALID_CODE = 'B049';
+
+let poaData = [];
+let orderData = [];
+let selMonths = new Set([4]); // May by default
+let orderCols = []; // Store column headers
+
+// Download filtered orders as Excel
+function downloadOrdersExcel(productName, productLink) {
+  const filteredOrders = orderData.filter(o => (o[5] || '').trim() === productLink.trim());
+  
+  if (filteredOrders.length === 0) {
+    alert('No orders found for this product');
+    return;
+  }
+
+  // Create worksheet data
+  const wsData = [orderCols, ...filteredOrders];
+  
+  // Create workbook
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Orders');
+  
+  // Set column widths
+  ws['!cols'] = orderCols.map(() => ({ wch: 18 }));
+  
+  // Download
+  const fileName = `${productName}_Orders.xlsx`;
+  XLSX.writeFile(wb, fileName);
+}
+
+const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+// Correct week mapping: May W4=POA W1, Jun W1-4=POA W2-5, Jul W1+=POA W6+
+const monthWeekMap = {
+  4: { name: 'May', weeks: [{ num: 4, poaIdx: 0, date: '26 May' }] },
+  5: { name: 'June', weeks: [
+    { num: 1, poaIdx: 1, date: '2 Jun' }, 
+    { num: 2, poaIdx: 2, date: '9 Jun' }, 
+    { num: 3, poaIdx: 3, date: '16 Jun' },
+    { num: 4, poaIdx: 4, date: '23 Jun' }
+  ]},
+  6: { name: 'July', weeks: [
+    { num: 1, poaIdx: 5, date: '30 Jun' },
+    { num: 2, poaIdx: 6, date: '7 Jul' },
+    { num: 3, poaIdx: 7, date: '14 Jul' },
+    { num: 4, poaIdx: 8, date: '21 Jul' }
+  ]}
+};
+
+const quarterConfig = {
+  'Q1': [0, 1, 2],
+  'Q2': [3, 4, 5],
+  'Q3': [6, 7, 8],
+  'Q4': [9, 10, 11]
+};
+
+function handleLogin(e) {
+  e.preventDefault();
+  const brand = document.getElementById('brandInput').value.trim();
+  const code = document.getElementById('codeInput').value.trim();
+  
+  if (brand === VALID_BRAND && code === VALID_CODE) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadData();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
+
+function handleLogout() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('dashboard').style.display = 'none';
+}
+
+function switchTab(panelId) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  const panelMap = {
+    'dashContent': 'dashPanel',
+    'campContent': 'campPanel',
+    'payContent': 'payPanel',
+    'impactContent': 'impactPanel',
+    'ratContent': 'ratPanel'
+  };
+  
+  document.getElementById(panelMap[panelId]).classList.add('active');
+}
+
+async function fetchSheet(sheetId, tabName) {
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tabName)}`;
+  const res = await fetch(url);
+  const text = await res.text();
+  const m = text.match(/setResponse\(([\s\S]*)\)/);
+  if (!m) throw new Error("Parse failed");
+  const json = JSON.parse(m[1]);
+  const cols = json.table.cols.map(c => (c.label || '').trim());
+  const rows = (json.table.rows || []).map(r =>
+    (r.c || []).map((cell, ci) => {
+      if (!cell || cell.v == null) return '';
+      return String(cell.f !== undefined && cell.f !== null ? cell.f : cell.v).trim();
+    })
+  ).filter(r => r.some(c => c !== ''));
+  return { cols, rows };
+}
+
+async function loadData() {
+  try {
+    const poa = await fetchSheet(SHEET_ID, 'POA');
+    const orders = await fetchSheet(SHEET_ID, 'Order Details');
+    
+    orderCols = orders.cols; // Store column headers for Excel export
+    
+    poaData = poa.rows.map(r => ({
+      product: r[0] || '',
+      link: r[1] || '',
+      current: parseInt(r[2]) || 0,
+      noOfReviews: parseInt(r[3]) || 0,
+      target: parseInt(r[4]) || 0,
+      total: parseInt(r[5]) || 0,
+      fiveStarReviews: parseInt(r[6]) || 0,
+      fourStarReviews: parseInt(r[7]) || 0,
+      fiveStarRating: parseFloat(r[8]) || 0,
+      week1: parseInt(r[9]) || 0,
+      week2: parseInt(r[10]) || 0,
+      week3: parseInt(r[11]) || 0,
+      week4: parseInt(r[12]) || 0,
+      week5: parseInt(r[13]) || 0,
+      week6: parseInt(r[14]) || 0,
+      week7: parseInt(r[15]) || 0,
+      week8: parseInt(r[16]) || 0,
+      totalReviews: parseInt(r[17]) || 0,
+      pp: parseInt(r[18]) || 0,
+      afterRating: parseFloat(r[19]) || 0
+    }));
+
+    orderData = orders.rows;
+    renderDashboard();
+    renderCampaigns();
+    renderPayments();
+    renderImpact();
+    renderRatings();
+  } catch (e) {
+    document.getElementById('dashContent').innerHTML = `<div style="color:#c0392b;padding:20px;text-align:center;">Error: ${e.message}</div>`;
+  }
+}
+
+function renderDashboard() {
+  let html = `
+    <p style="font-size:0.72rem;color:var(--muted);margin-bottom:16px;">Select months · then drill into dates</p>
+
+    <div class="kpi-name" style="margin-bottom:8px;">QUICK SELECT</div>
+    <div class="btn-group">
+      <button onclick="selectQuarter('Q1')">Q1</button>
+      <button onclick="selectQuarter('Q2')">Q2</button>
+      <button onclick="selectQuarter('Q3')">Q3</button>
+      <button onclick="selectQuarter('Q4')">Q4</button>
+      <button onclick="selectQuarter('Full')">Full Year</button>
+    </div>
+
+    <div class="kpi-name" style="margin-bottom:8px;">SELECT MONTHS <span style="color:var(--gold);font-size:0.56rem;">(TAP TO TOGGLE)</span></div>
+    <div class="month-grid" id="monthGrid">
+  `;
+
+  monthNames.forEach((m, i) => {
+    html += `
+      <button id="mbtn-${i}" class="month-btn ${selMonths.has(i) ? 'active' : ''}" onclick="toggleMonth(${i})">
+        ${m}
+      </button>
+    `;
+  });
+
+  html += `</div><div id="dashKpis"></div>`;
+
+  document.getElementById('dashContent').innerHTML = html;
+  updateDashKpis();
+}
+
+function selectQuarter(q) {
+  if (q === 'Full') {
+    selMonths = new Set([0,1,2,3,4,5,6,7,8,9,10,11]);
+  } else {
+    selMonths = new Set(quarterConfig[q]);
+  }
+  renderDashboard();
+}
+
+function toggleMonth(i) {
+  if (selMonths.has(i)) selMonths.delete(i); else selMonths.add(i);
+  renderDashboard();
+}
+
+function updateDashKpis() {
+  // Get all weeks for selected months
+  const selectedWeeks = [];
+  const weekToOrdersMap = {};
+  
+  selMonths.forEach(mi => {
+    if (monthWeekMap[mi]) {
+      monthWeekMap[mi].weeks.forEach(w => {
+        selectedWeeks.push(w);
+        weekToOrdersMap[w.date] = { week: w, products: [], orders: 0, investment: 0 };
+      });
+    }
+  });
+
+  // Calculate Slots Given from POA
+  const totalSlots = selectedWeeks.reduce((s, w) => {
+    return s + poaData.reduce((ps, p) => {
+      const weeks = [p.week1, p.week2, p.week3, p.week4, p.week5, p.week6, p.week7, p.week8];
+      return ps + (weeks[w.poaIdx] || 0);
+    }, 0);
+  }, 0);
+
+  // Calculate Slots Done = count of orders matching product links in selected weeks
+  const slotsDone = orderData.filter(o => {
+    const orderLink = (o[5] || '').trim();
+    return poaData.some(p => p.link.trim() === orderLink);
+  }).length;
+
+  // Investment
+  const investment = orderData.filter(o => {
+    const orderLink = (o[5] || '').trim();
+    return poaData.some(p => p.link.trim() === orderLink);
+  }).reduce((s, r) => s + (parseFloat((r[6] || '').replace(/[^0-9.-]/g, '')) || 0), 0);
+
+  const campaigns = [...new Set(poaData.map(p => p.product))].length;
+  const pct = totalSlots > 0 ? Math.round(slotsDone / totalSlots * 100) : 0;
+
+  const selLabel = selMonths.size === 0 ? '' :
+    [...selMonths].sort().map(i => monthNames[i]).join(', ');
+
+  let html = `
+    <div class="kpi-grid">
+      <div class="kpi-card green">
+        <div class="kpi-name">SLOTS GIVEN</div>
+        <div class="kpi-val">${totalSlots || '—'}</div>
+        <div class="kpi-sub">${selLabel}</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-name">SLOTS DONE</div>
+        <div class="kpi-val">${slotsDone || '—'}</div>
+        <div class="kpi-sub">${pct}% complete</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-name">INVESTMENT</div>
+        <div class="kpi-val" style="color:var(--gold);">${investment > 0 ? '₹' + formatAmt(investment) : '—'}</div>
+        <div class="kpi-sub">Refund to agency</div>
+      </div>
+      <div class="kpi-card yellow">
+        <div class="kpi-name">CAMPAIGNS</div>
+        <div class="kpi-val">${campaigns || '—'}</div>
+        <div class="kpi-sub">In period</div>
+      </div>
+    </div>
+    ${renderDrillDown(selectedWeeks)}
+  `;
+
+  document.getElementById('dashKpis').innerHTML = html;
+}
+
+function formatAmt(n) {
+  if (n >= 100000) return (n / 100000).toFixed(2) + 'L';
+  return n.toLocaleString('en-IN');
+}
+
+function renderDrillDown(selectedWeeks) {
+  if (!selectedWeeks.length) return `<div style="font-size:0.72rem;color:var(--muted);text-align:center;padding:20px;">No data in selected months</div>`;
+
+  let html = `<div class="drill-header">DRILL INTO DATES (OPTIONAL)</div><div class="drill-details">`;
+
+  selectedWeeks.forEach(w => {
+    const poaIdx = w.poaIdx;
+    
+    const weekProds = poaData.filter(p => {
+      const weeks = [p.week1, p.week2, p.week3, p.week4, p.week5, p.week6, p.week7, p.week8];
+      return weeks[poaIdx] > 0;
+    });
+
+    const totalSlots = weekProds.reduce((s, p) => {
+      const weeks = [p.week1, p.week2, p.week3, p.week4, p.week5, p.week6, p.week7, p.week8];
+      return s + (weeks[poaIdx] || 0);
+    }, 0);
+    
+    // Count orders matching product links (Slots Done)
+    const relatedOrders = orderData.filter(o => {
+      const orderLink = (o[5] || '').trim();
+      return weekProds.some(p => p.link.trim() === orderLink);
+    });
+    const slotsDone = relatedOrders.length;
+    const inv = relatedOrders.reduce((s, r) => s + (parseFloat((r[6] || '').replace(/[^0-9.-]/g, '')) || 0), 0);
+    const camps = weekProds.length;
+
+    html += `
+      <details>
+        <summary>
+          <div>
+            <div>${w.date}</div>
+            <div style="font-size:0.62rem;color:var(--muted);margin-top:2px;">${camps} campaign(s) · ${totalSlots} slots given · ${slotsDone} done</div>
+          </div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:0.95rem;font-weight:700;color:var(--gold);">₹${formatAmt(inv)}</div>
+        </summary>
+        <div class="drill-content">
+          ${weekProds.map(p => {
+            const weeks = [p.week1, p.week2, p.week3, p.week4, p.week5, p.week6, p.week7, p.week8];
+            const slotCount = weeks[poaIdx];
+            const prodOrders = orderData.filter(o => (o[5] || '').trim() === p.link.trim());
+            const pct = slotCount > 0 ? Math.round(prodOrders.length / slotCount * 100) : 0;
+            const prodInv = prodOrders.reduce((s, r) => s + (parseFloat((r[6] || '').replace(/[^0-9.-]/g, '')) || 0), 0);
+
+            return `<div class="drill-card">
+              <div class="drill-card-title">${p.product}</div>
+              <div class="drill-stats">
+                <span>${prodOrders.length}/${slotCount} matched · ${pct}%</span>
+                <span class="drill-amount">₹${formatAmt(prodInv)}</span>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </details>
+    `;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+function renderCampaigns() {
+  let campaignHtml = `<h2 style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--dark);margin-bottom:16px;"><span style="color:var(--gold);">Campaign</span> Breakdown</h2>`;
+
+  // Get first selected week date for display
+  const selectedWeeks = [];
+  let firstDate = '';
+  selMonths.forEach(mi => {
+    if (monthWeekMap[mi]) {
+      monthWeekMap[mi].weeks.forEach(w => {
+        selectedWeeks.push(w);
+        if (!firstDate) firstDate = w.date;
+      });
+    }
+  });
+
+  if (!selectedWeeks.length) {
+    campaignHtml += `<div style="font-size:0.72rem;color:var(--muted);text-align:center;padding:20px;">No period selected</div>`;
+  } else {
+    // Group by LINK (not by product name, since same product can have different links)
+    const campaignCards = {};
+    
+    poaData.forEach((p, idx) => {
+      if (p.link.trim()) { // Only if link exists
+        campaignCards[p.link] = {
+          product: p.product,
+          link: p.link,
+          date: firstDate,
+          totalSlots: p.total,
+          poaIdx: idx
+        };
+      }
+    });
+
+    Object.keys(campaignCards).sort().forEach((linkKey, idx) => {
+      const camp = campaignCards[linkKey];
+      const prodOrders = orderData.filter(o => (o[5] || '').trim() === camp.link.trim());
+      const doneCnt = prodOrders.length;
+      const leftCnt = camp.totalSlots - doneCnt;
+      const pct = camp.totalSlots > 0 ? Math.round(doneCnt / camp.totalSlots * 100) : 0;
+      
+      const prodId = 'B053P' + (idx + 1).toString().padStart(3, '0');
+
+      campaignHtml += `
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow);">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
+            <div>
+              <a href="${camp.link}" target="_blank" style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:600;color:var(--gold);text-decoration:underline;cursor:pointer;">${camp.product}</a>
+              <div style="font-size:0.72rem;color:var(--muted);margin-top:3px;">${camp.date}</div>
+            </div>
+            <div style="background:#1c1812;color:var(--gold);border-radius:8px;padding:5px 10px;font-size:0.65rem;font-weight:700;font-family:'Jost',sans-serif;">${prodId}</div>
+          </div>
+
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <div style="font-size:0.7rem;color:var(--muted);">${pct}% complete</div>
+              <div style="font-size:0.7rem;color:var(--muted);">${doneCnt}/${camp.totalSlots} orders</div>
+            </div>
+            <div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden;">
+              <div style="height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-light));border-radius:99px;width:${pct}%;"></div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+            <div style="background:#faf7f2;border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--dark);">${camp.totalSlots}</div>
+              <div style="font-size:0.6rem;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted);">Total</div>
+            </div>
+            <div style="background:#faf7f2;border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--dark);">${doneCnt}</div>
+              <div style="font-size:0.6rem;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted);">Done</div>
+            </div>
+            <div style="background:#faf7f2;border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--dark);">${leftCnt}</div>
+              <div style="font-size:0.6rem;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted);">Left</div>
+            </div>
+          </div>
+
+          <button onclick="downloadOrdersExcel('${camp.product}', '${camp.link}')" style="width:100%;padding:8px;background:#4ade80;border:none;border-radius:8px;color:#fff;font-family:'Jost',sans-serif;font-size:0.75rem;font-weight:600;cursor:pointer;">Open</button>
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById('campContent').innerHTML = campaignHtml;
+}
+
+function renderPayments() {
+  let paymentHtml = `<h2 style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--dark);margin-bottom:4px;"><span style="color:var(--gold);">Payment</span> Summary</h2>
+    <p style="font-size:0.7rem;color:var(--muted);margin-bottom:16px;">Live order data · matched by Brand + Code + Date</p>`;
+
+  const paymentCards = {};
+  
+  // Build payment data for each product link
+  poaData.forEach((p, idx) => {
+    if (p.link.trim()) {
+      const prodOrders = orderData.filter(o => (o[5] || '').trim() === p.link.trim());
+      const orderCount = prodOrders.length;
+      const totalAmount = prodOrders.reduce((s, r) => s + (parseFloat((r[6] || '').replace(/[^0-9.-]/g, '')) || 0), 0);
+      const refundAmount = prodOrders.reduce((s, r) => s + (parseFloat((r[9] || '').replace(/[^0-9.-]/g, '')) || 0), 0);
+      
+      paymentCards[p.link] = {
+        product: p.product,
+        link: p.link,
+        orderCount: orderCount,
+        totalAmount: totalAmount,
+        refundAmount: refundAmount,
+        poaIdx: idx
+      };
+    }
+  });
+
+  // Render each product's payment card
+  Object.keys(paymentCards).forEach((linkKey, idx) => {
+    const card = paymentCards[linkKey];
+    const prodId = 'B053P' + (idx + 1).toString().padStart(3, '0');
+
+    paymentHtml += `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <div style="background:#1c1812;color:var(--gold);border-radius:8px;padding:5px 10px;font-size:0.65rem;font-weight:700;font-family:'Jost',sans-serif;">${prodId}</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:var(--dark);">${card.product}</div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);">
+          <div style="font-size:0.72rem;color:var(--muted);font-weight:500;">Orders Matched</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700;color:var(--dark);">${card.orderCount}</div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);">
+          <div style="font-size:0.72rem;color:var(--muted);font-weight:500;">Total Order Amount</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700;color:var(--dark);">₹${formatAmt(card.totalAmount)}</div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);">
+          <div style="font-size:0.72rem;color:var(--muted);font-weight:500;">Refund Formula</div>
+          <div style="font-size:0.75rem;color:var(--muted);font-weight:500;">₹70 per order</div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:0.72rem;color:var(--dark);font-weight:600;">Refund to Agency</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700;color:var(--gold);">₹${formatAmt(card.refundAmount)}</div>
+        </div>
+      </div>
+    `;
+  });
+
+  document.getElementById('payContent').innerHTML = paymentHtml;
+}
+
+function renderImpact() {
+  let impactHtml = `<h2 style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--dark);margin-bottom:4px;"><span style="color:var(--gold);">Campaign</span> Impact</h2>
+    <p style="font-size:0.7rem;color:var(--muted);margin-bottom:16px;">Investment · Rating Impact</p>`;
+
+  const impactCards = {};
+  let grandTotal = 0;
+  
+  // Build impact data for each product link
+  poaData.forEach((p, idx) => {
+    if (p.link.trim()) {
+      const prodOrders = orderData.filter(o => (o[5] || '').trim() === p.link.trim());
+      const totalInvestment = prodOrders.reduce((s, r) => s + (parseFloat((r[9] || '').replace(/[^0-9.-]/g, '')) || 0), 0);
+      grandTotal += totalInvestment;
+      const reviewsRequired = p.target || 0;
+      const costPerReview = reviewsRequired > 0 ? totalInvestment / reviewsRequired : 0;
+      const initialRating = p.current || 0;
+      const currentRating = p.afterRating || 0;
+      const ratingLift = currentRating > initialRating ? (currentRating - initialRating).toFixed(1) : 'Pending';
+      
+      impactCards[p.link] = {
+        product: p.product,
+        link: p.link,
+        totalInvestment: totalInvestment,
+        costPerReview: costPerReview,
+        reviewsRequired: reviewsRequired,
+        initialRating: initialRating,
+        currentRating: currentRating,
+        ratingLift: ratingLift,
+        poaIdx: idx
+      };
+    }
+  });
+
+  // Add total investment summary
+  if (grandTotal > 0) {
+    impactHtml += `
+      <div style="background:linear-gradient(135deg,#1c1812,#2e2416);border-radius:14px;padding:14px 16px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+        <div style="font-size:0.62rem;color:rgba(255,255,255,0.6);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:4px;">Total Investment (All Campaigns)</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:700;color:var(--gold-light);">₹${formatAmt(grandTotal)}</div>
+      </div>
+    `;
+  }
+
+  // Render each product's impact card
+  Object.keys(impactCards).forEach((linkKey, idx) => {
+    const card = impactCards[linkKey];
+    const prodId = 'B053P' + (idx + 1).toString().padStart(3, '0');
+
+    impactHtml += `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <div style="background:#1c1812;color:var(--gold);border-radius:8px;padding:5px 10px;font-size:0.65rem;font-weight:700;font-family:'Jost',sans-serif;">${prodId}</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:var(--dark);">${card.product}</div>
+        </div>
+
+        <div style="background:#faf7f2;border-radius:10px;padding:12px;margin-bottom:12px;">
+          <div style="font-size:0.62rem;color:var(--muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:4px;">Total Investment</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;color:var(--gold);">₹${formatAmt(card.totalInvestment)}</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div style="background:#faf7f2;border-radius:10px;padding:12px;">
+            <div style="font-size:0.62rem;color:var(--muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;">Cost / Review</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700;color:var(--dark);">${card.reviewsRequired > 0 ? '₹' + formatAmt(card.costPerReview) : '—'}</div>
+          </div>
+          <div style="background:#faf7f2;border-radius:10px;padding:12px;">
+            <div style="font-size:0.62rem;color:var(--muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;">Reviews Required</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700;color:var(--dark);">${card.reviewsRequired}</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div style="background:#faf7f2;border-radius:10px;padding:12px;">
+            <div style="font-size:0.62rem;color:var(--muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;">Initial Rating</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700;color:var(--dark);">${card.initialRating || '—'}</div>
+          </div>
+          <div style="background:#faf7f2;border-radius:10px;padding:12px;">
+            <div style="font-size:0.62rem;color:var(--muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;">Current Rating</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700;color:var(--dark);">${card.currentRating || '—'}</div>
+          </div>
+        </div>
+
+        <div style="background:#faf7f2;border-radius:10px;padding:12px;">
+          <div style="font-size:0.62rem;color:var(--muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;">Rating Lift</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700;color:var(--gold);">${card.ratingLift}</div>
+        </div>
+      </div>
+    `;
+  });
+
+  document.getElementById('impactContent').innerHTML = impactHtml;
+}
+
+function renderRatings() {
+  let ratingsHtml = `<h2 style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--dark);margin-bottom:16px;"><span style="color:var(--gold);">Brand</span> Ratings</h2>`;
+
+  const ratingCards = {};
+  
+  // Build rating data for each product link
+  poaData.forEach((p, idx) => {
+    if (p.link.trim()) {
+      const prodOrders = orderData.filter(o => (o[5] || '').trim() === p.link.trim());
+      const reviewCount = prodOrders.length;
+      
+      ratingCards[p.link] = {
+        product: p.product,
+        link: p.link,
+        beforeRating: p.current || '—',
+        afterRating: p.afterRating || '—',
+        reviewCount: reviewCount,
+        poaIdx: idx
+      };
+    }
+  });
+
+  // Render each product's rating card
+  Object.keys(ratingCards).forEach((linkKey, idx) => {
+    const card = ratingCards[linkKey];
+    const prodId = 'B053P' + (idx + 1).toString().padStart(3, '0');
+
+    ratingsHtml += `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <div style="background:#1c1812;color:var(--gold);border-radius:8px;padding:5px 10px;font-size:0.65rem;font-weight:700;font-family:'Jost',sans-serif;">${prodId}</div>
+          <a href="${card.link}" target="_blank" style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:var(--gold);text-decoration:underline;cursor:pointer;">${card.product}</a>
+        </div>
+
+        <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <div style="flex:1;">
+              <div style="font-size:0.62rem;color:var(--muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px;text-align:center;">Before</div>
+              <div style="background:#faf7f2;border-radius:10px;padding:12px;text-align:center;">
+                <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;color:var(--gold);">${card.beforeRating}</div>
+              </div>
+            </div>
+            <div style="font-size:1.2rem;color:var(--muted);">→</div>
+            <div style="flex:1;">
+              <div style="font-size:0.62rem;color:var(--muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px;text-align:center;">After</div>
+              <div style="background:#faf7f2;border-radius:10px;padding:12px;text-align:center;">
+                <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;color:var(--dark);">${card.afterRating}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#faf7f2;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:0.72rem;color:var(--muted);">review data snapshot taken on 4 Jun</div>
+        </div>
+      </div>
+    `;
+  });
+
+  document.getElementById('ratContent').innerHTML = ratingsHtml;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('brandInput').focus();
+});
+</script>
+</body>
+</html>
